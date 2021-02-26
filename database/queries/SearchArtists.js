@@ -1,3 +1,7 @@
+/** @format */
+
+const { query } = require('../models/album');
+const { off } = require('../models/artist');
 const Artist = require('../models/artist');
 
 /**
@@ -7,6 +11,45 @@ const Artist = require('../models/artist');
  * @param {integer} offset How many records to skip in the result set
  * @param {integer} limit How many records to return in the result set
  * @return {promise} A promise that resolves with the artists, count, offset, and limit
+ *  example: { all: [artists], count: count, offset: offset, limit: limit }
  */
 module.exports = (criteria, sortProperty, offset = 0, limit = 20) => {
+	return Artist.find(buildQuery(criteria))
+		.sort({ [sortProperty]: 1 })
+		.skip(offset)
+		.limit(limit)
+		.then((artists) => {
+			return {
+				all: artists,
+				count: artists.length,
+				offset: offset,
+				limit: limit,
+			};
+		});
+};
+
+const buildQuery = (criteria) => {
+	const nameQuery = criteria.name ? { $text: { $search: criteria.name } } : {};
+	const ageQuery = criteria.age
+		? {
+				age: {
+					$gte: criteria.age.min,
+					$lte: criteria.age.max,
+				},
+		  }
+		: {};
+	const yearsActiveQuery = criteria.yearsActive
+		? {
+				yearsActive: {
+					$gte: criteria.yearsActive.min,
+					$lte: criteria.yearsActive.max,
+				},
+		  }
+		: {};
+
+	return {
+		...nameQuery,
+		...ageQuery,
+		...yearsActiveQuery,
+	};
 };

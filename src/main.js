@@ -1,3 +1,5 @@
+/** @format */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { createStore, applyMiddleware } from 'redux';
@@ -12,25 +14,26 @@ import './seeds';
 mongoose.Promise = Promise;
 
 const App = () => {
-  const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
+	const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
 
-  return (
-    <Provider store={store}>
-      <Routes />
-    </Provider>
-  );
+	return (
+		<Provider store={store}>
+			<Routes />
+		</Provider>
+	);
 };
 
 const db = new Db('upstar_music', new Server('localhost', 27017));
-db.open()
-  .then(() => {
-    window.db = db;
-    mongoose.connect('mongodb://localhost/upstar_music');
-      mongoose.connection
-        .once('open', () => {
-          ReactDOM.render(<App />, document.getElementById('root'));
-        })
-        .on('error', (error) => {
-          console.warn('Warning', error);
-        });
-  });
+db.open().then(() => {
+	window.db = db;
+	mongoose.connect('mongodb://localhost/upstar_music', {
+		useMongoClient: true,
+	});
+	mongoose.connection
+		.once('open', () => {
+			ReactDOM.render(<App />, document.getElementById('root'));
+		})
+		.on('error', (error) => {
+			console.warn('Warning', error);
+		});
+});
